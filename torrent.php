@@ -1,4 +1,12 @@
 <?php
+          require "config.php";
+          header("Content-type: application/json");
+          if (isset($_GET['key'])) {
+             die("API key missing."); 
+          }
+          if (!in_array($_GET['key'], $api_keys)) {
+             die("API key invalid");   
+          }
           header("Content-type: application/json");
           $dir = 'sqlite:rarbg_db.sqlite';
           $dbh  = new PDO($dir) or die("cannot open the database");
