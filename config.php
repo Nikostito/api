@@ -1,1 +1,3 @@
-$api_keys = ['Your API Key'];
+<?php
+  $api_keys = ['Your API Key'];
+?>
