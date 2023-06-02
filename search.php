@@ -19,12 +19,13 @@
             foreach ($parts as $word) {
                 $query.=" '%$word%' OR ";
                 }
-            $finalquery = rtrim($query, " OR");
+            $query = rtrim($query, " OR");
+            $query.= 'ORDER BY dt DESC';
             } 
         else {
-        $query.= '%'. $q . '%';
+        $query.= "'%". $q . "%'".' ORDER BY dt DESC';
         } 
-        $data= $dbh->query($finalquery);
+        $data= $dbh->query($query);
         $results = $data->fetchAll(PDO::FETCH_ASSOC);
         $total = count($results);
         if ($results) {
