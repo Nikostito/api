@@ -15,7 +15,7 @@
           $limited_results = array_slice($results, $offset, $results_per_page);
 
           header('Content-type: application/json');
-          echo json_encode(array('results' => $limited_results, 'count' => $total,'pages' => ceil($total/$results_per_page)));
+          echo json_encode(array('data' => $limited_results, 'count' => $total,'pages' => ceil($total/$results_per_page)));
 
           $dbh = null;
 
