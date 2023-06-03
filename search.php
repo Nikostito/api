@@ -15,15 +15,17 @@
     if (str_starts_with($_GET['query'], 'tt')) {
         $dir = 'sqlite:rarbg_db.sqlite';
         $dbh  = new PDO($dir) or die("cannot open the database");
-        $stmt = $dbh->prepare("SELECT * FROM 'items' WHERE imdb=:id LIMIT 0,1");
+        $stmt = $dbh->prepare("SELECT * FROM 'items' WHERE imdb=:id LIMIT 0,10");
         $stmt->execute([ 'id' => $_GET['query'] ]);
         $results = $stmt;
+        $total = $stmt->fetchColumn();
         echo json_encode(array(
             'data' => $results,
-            'count' => '1',
+            'count' => $total,
             'pages' => '1',
             'query' => $_GET['query']
         ));
+        die();
     }
 
     $dir = 'sqlite:rarbg_db.sqlite';
