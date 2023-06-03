@@ -16,25 +16,45 @@
     $dbh = new PDO($dir) or die("cannot open the database");
 
     $q = $_GET['query'];
-    $query = "SELECT * FROM items WHERE cat != 'xxx' AND title LIKE :like ORDER BY dt DESC";
+    $keywords = explode(' ', $q);
+    $conditions = array();
+    $params = array();
+
+    foreach ($keywords as $index => $keyword) {
+        $paramName = ":keyword$index";
+        $conditions[] = "title LIKE $paramName";
+        $params[$paramName] = "%$keyword%";
+    }
+
+    $query = "SELECT COUNT(*) FROM items WHERE cat != 'xxx' AND (" . implode(' AND ', $conditions) . ")";
     $stmt = $dbh->prepare($query);
-    $stmt->bindValue(':like', "%$q%", PDO::PARAM_STR);
+    $stmt->execute($params);
+    $total = $stmt->fetchColumn();
+
+    $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+    $results_per_page = 20;
+    $offset = ($page - 1) * $results_per_page;
+
+    $query = "SELECT * FROM items WHERE cat != 'xxx' AND (" . implode(' AND ', $conditions) . ") ORDER BY dt DESC LIMIT :offset, :limit";
+    $stmt = $dbh->prepare($query);
+    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+    $stmt->bindValue(':limit', $results_per_page, PDO::PARAM_INT);
+    foreach ($params as $paramName => $paramValue) {
+        $stmt->bindValue($paramName, $paramValue);
+    }
     $stmt->execute();
 
     $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    $total = count($results);
+
+    $num_results = count($results);
 
     if ($results) {
-        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-        $results_per_page = 20;
-        $offset = ($page - 1) * $results_per_page;
-        $limited_results = array_slice($results, $offset, $results_per_page);
-
+        $total_pages = ceil($total / $results_per_page);
         header('Content-type: application/json');
         echo json_encode(array(
-            'data' => $limited_results,
+            'data' => $results,
             'count' => $total,
-            'pages' => ceil($total / $results_per_page),
+            'pages' => $total_pages,
             'query' => $q
         ));
     } else {
