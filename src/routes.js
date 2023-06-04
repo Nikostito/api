@@ -9,15 +9,15 @@ const pageLimit = 25
 router.get("/", async (req, res) => {
     const torrents = await Item
         .find()
-        .limit(pageLimit)
+    .limit(pageLimit)
         .sort('-dt')
-        .paginate()
+    .paginate()
         .exec()
     res.status(200).send(torrents)
 })
 
 // Get torrent
-router.get("/:ext_id", async (req, res) => {
+router.get("/ext_id/:ext_id", async (req, res) => {
     const torrent = await Item
         .find({ ext_id: req.params.ext_id })
         .exec()
@@ -29,11 +29,10 @@ router.get("/search/:search_title", async (req, res) => {
     let searchQuery = queryVar(req.params.search_title)
     const result = await Item
         .find(searchQuery)
-        .limit(pageLimit)
-        .paginate()
+    .limit(pageLimit)
+    .paginate()
         .exec()
     res.status(200).send(result)
-
 })
 
 // List all categories
@@ -46,12 +45,16 @@ router.get("/categories", async (req, res) => {
 })
 
 // List torrents from specific categories
-router.get("/:cat", async (req, res) => {
-    const torrents = await Item
-        .find({ cat: req.params.cat })
-        .limit(pageLimit)
+router.get("/categories/:cat", async (req, res) => {
+  const categories = await Item.find().distinct("cat").exec()
+  if (!categories.includes(req.params.cat)) {
+    return res.status(404).json({ error: "Category not found." })
+  }
+  const torrents = await Item
+    .find({ cat: req.params.cat })
+    .limit(pageLimit)
         .sort('-dt')
-        .paginate()
+    .paginate()
         .exec()
     res.status(200).send(torrents)
 })
